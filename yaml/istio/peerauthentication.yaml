@@ -1,0 +1,37 @@
+# PeerAuthentication - mTLS 설정
+---
+# 메시 전체 STRICT mTLS
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
+---
+# 네임스페이스별 PERMISSIVE (마이그레이션용)
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: default
+spec:
+  mtls:
+    mode: PERMISSIVE
+---
+# 특정 워크로드 포트별 설정
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: test-app-mtls
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: test-app
+  mtls:
+    mode: STRICT
+  portLevelMtls:
+    8080:
+      mode: PERMISSIVE

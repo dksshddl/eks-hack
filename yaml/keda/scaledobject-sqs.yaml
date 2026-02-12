@@ -1,0 +1,18 @@
+# KEDA ScaledObject - SQS 큐 기반 스케일링
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: sqs-scaledobject
+spec:
+  scaleTargetRef:
+    name: sqs-consumer
+  minReplicaCount: 0
+  maxReplicaCount: 20
+  triggers:
+    - type: aws-sqs-queue
+      metadata:
+        queueURL: https://sqs.ap-northeast-2.amazonaws.com/123456789/my-queue
+        queueLength: "5"
+        awsRegion: ap-northeast-2
+      authenticationRef:
+        name: keda-aws-credentials

@@ -1,0 +1,32 @@
+# Auto-instrumentation 설정
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: auto-instrumentation
+spec:
+  exporter:
+    endpoint: http://otel-collector-collector:4317
+  propagators:
+    - tracecontext
+    - baggage
+    - b3
+  sampler:
+    type: parentbased_traceidratio
+    argument: "0.1"
+  python:
+    env:
+      - name: OTEL_PYTHON_LOG_CORRELATION
+        value: "true"
+  nodejs:
+    env:
+      - name: OTEL_NODE_RESOURCE_DETECTORS
+        value: "env,host,os"
+  java:
+    env:
+      - name: OTEL_JAVAAGENT_DEBUG
+        value: "false"
+---
+# Pod에 annotation 추가하여 auto-instrumentation 활성화
+# instrumentation.opentelemetry.io/inject-python: "true"
+# instrumentation.opentelemetry.io/inject-nodejs: "true"
+# instrumentation.opentelemetry.io/inject-java: "true"

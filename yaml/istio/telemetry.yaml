@@ -1,0 +1,26 @@
+# Istio Telemetry - 메트릭/로깅/트레이싱 설정
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  # 액세스 로깅
+  accessLogging:
+    - providers:
+        - name: envoy
+  # 메트릭 설정
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - match:
+            metric: REQUEST_COUNT
+          tagOverrides:
+            response_code:
+              operation: UPSERT
+  # 트레이싱 설정
+  tracing:
+    - providers:
+        - name: zipkin
+      randomSamplingPercentage: 10

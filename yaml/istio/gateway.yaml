@@ -1,0 +1,15 @@
+# Istio Gateway - 외부 트래픽 진입점
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: test-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*.example.com"

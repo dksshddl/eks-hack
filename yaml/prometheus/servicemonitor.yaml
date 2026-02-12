@@ -1,0 +1,15 @@
+# ServiceMonitor 예시 - 앱 메트릭 수집
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: test-app-monitor
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: test-app
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics

@@ -1,0 +1,14 @@
+# PodMonitor 예시 - Service 없이 Pod 직접 수집
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: test-pod-monitor
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: test-app
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 30s

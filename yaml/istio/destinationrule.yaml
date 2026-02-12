@@ -1,0 +1,18 @@
+# Istio DestinationRule - 서브셋 정의
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: test-dr
+spec:
+  host: test-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2

@@ -1,0 +1,15 @@
+# KEDA ScaledObject - CPU 기반 스케일링
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: test-scaledobject
+spec:
+  scaleTargetRef:
+    name: test-app
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        value: "50"

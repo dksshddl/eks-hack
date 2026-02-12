@@ -1,0 +1,21 @@
+# Istio VirtualService - 트래픽 라우팅
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: test-vs
+spec:
+  hosts:
+    - test-service
+  http:
+    - match:
+        - headers:
+            version:
+              exact: v2
+      route:
+        - destination:
+            host: test-service
+            subset: v2
+    - route:
+        - destination:
+            host: test-service
+            subset: v1

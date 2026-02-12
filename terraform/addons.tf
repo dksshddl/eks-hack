@@ -76,3 +76,13 @@ module "aws_load_balancer_controller" {
   cluster_name  = var.cluster_name
   chart_version = local.addon_versions["aws-load-balancer-controller"]
 }
+
+# VPC Endpoints for private EKS cluster
+module "vpc_endpoints" {
+  source            = "./modules/vpc-endpoints"
+  count             = var.create_vpc_endpoints ? 1 : 0
+  vpc_id            = var.vpc_id
+  subnet_ids        = var.vpc_endpoint_subnet_ids
+  security_group_id = var.vpc_endpoint_security_group_id
+  region            = var.aws_region
+}

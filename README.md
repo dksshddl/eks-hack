@@ -5,7 +5,7 @@ Deploy third-party addons to existing EKS clusters via Helm using Terraform.
 ## Quick Start
 
 ```bash
-terraform init
+cd terraform && terraform init
 cp terraform.tfvars.example terraform.tfvars
 # Edit terraform.tfvars (cluster_name, vpc_id, addons)
 terraform apply
@@ -64,6 +64,21 @@ State file paths:
 | `grafana` | Visualization dashboard |
 | `cluster-autoscaler` | Node autoscaling |
 | `aws-load-balancer-controller` | ALB/NLB controller |
+
+## VPC Endpoints (Private Cluster)
+
+For private EKS clusters, enable VPC endpoints:
+
+```hcl
+create_vpc_endpoints           = true
+vpc_endpoint_subnet_ids        = ["subnet-xxx", "subnet-yyy"]
+vpc_endpoint_security_group_id = "sg-xxx"
+```
+
+Creates the following endpoints required for Karpenter and EKS:
+- `ec2`, `ecr.api`, `ecr.dkr` (Interface)
+- `sts`, `ssm`, `sqs`, `eks` (Interface)
+- `s3` (Gateway)
 
 ## Outputs
 

@@ -1,0 +1,56 @@
+# AWS LB Controller WAF integration issue
+name: "ALB Controller WAF Association Failure"
+ticket: "CASE-11111"
+description: |
+  AWS LB Controller 2.5.x에서 WAFv2 WebACL 연결 실패.
+  IAM 권한 누락 시 발생.
+
+cluster:
+  name: "${CLUSTER_NAME}"
+
+components:
+  aws-load-balancer-controller: "1.5.0"
+
+setup:
+  - action: terraform
+    addons:
+      aws-load-balancer-controller: "1.5.0"
+  - action: kubectl
+    files:
+      - yaml/aws-lb-controller/test-app.yaml
+  - action: kubectl
+    manifest: |
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: test-ingress-waf
+        annotations:
+          alb.ingress.kubernetes.io/scheme: internet-facing
+          alb.ingress.kubernetes.io/target-type: ip
+          alb.ingress.kubernetes.io/wafv2-acl-arn: "${WAF_ACL_ARN}"
+      spec:
+        ingressClassName: alb
+        rules:
+        - http:
+            paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: test-service
+                  port:
+                    number: 80
+
+test:
+  - name: "Check ingress status"
+    command: "kubectl describe ingress test-ingress-waf"
+  - name: "Check controller logs"
+    command: "kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --tail=50"
+
+verify:
+  - name: "ALB WAF association"
+    command: "aws wafv2 get-web-acl-for-resource --resource-arn ${ALB_ARN}"
+
+cleanup:
+  - action: kubectl
+    command: "kubectl delete ingress test-ingress-waf"

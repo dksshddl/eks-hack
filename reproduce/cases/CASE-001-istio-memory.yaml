@@ -1,0 +1,62 @@
+# Istio 1.19 memory leak reproduction
+name: "Istio 1.19 Sidecar Memory Leak"
+ticket: "CASE-12345"
+description: |
+  Istio 1.19.x에서 장시간 운영 시 envoy sidecar 메모리 누수 발생.
+  1.20.0에서 수정됨.
+
+cluster:
+  name: "${CLUSTER_NAME}"
+  
+components:
+  istio: "1.19.3"
+
+setup:
+  - action: terraform
+    addons:
+      istio: "1.19.3"
+  - action: kubectl
+    files:
+      - yaml/istio/virtualservice.yaml
+      - yaml/istio/destinationrule.yaml
+  - action: kubectl
+    manifest: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: test-app
+        labels:
+          app: test-app
+      spec:
+        replicas: 2
+        selector:
+          matchLabels:
+            app: test-app
+        template:
+          metadata:
+            labels:
+              app: test-app
+              sidecar.istio.io/inject: "true"
+          spec:
+            containers:
+            - name: nginx
+              image: nginx:alpine
+              ports:
+              - containerPort: 80
+
+test:
+  - name: "Generate traffic"
+    command: "hey -n 100000 -c 50 http://test-app.default.svc.cluster.local"
+  - name: "Check memory"
+    command: "kubectl top pods -l app=test-app"
+
+verify:
+  - name: "Sidecar memory usage"
+    command: "kubectl exec -it deploy/test-app -c istio-proxy -- pilot-agent request GET stats | grep memory"
+
+cleanup:
+  - action: kubectl
+    command: "kubectl delete deployment test-app"
+  - action: terraform
+    destroy_addons:
+      - istio

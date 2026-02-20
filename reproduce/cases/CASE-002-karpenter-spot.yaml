@@ -1,0 +1,63 @@
+# Karpenter Spot interruption handling
+name: "Karpenter Spot Interruption Not Handled"
+ticket: "CASE-67890"
+description: |
+  Karpenter 0.32.x에서 Spot 인터럽션 이벤트 처리 실패.
+  SQS 큐 설정 누락 시 발생.
+
+cluster:
+  name: "${CLUSTER_NAME}"
+
+components:
+  karpenter: "0.32.0"
+
+setup:
+  - action: terraform
+    addons:
+      karpenter: "0.32.0"
+  - action: kubectl
+    files:
+      - yaml/karpenter/nodepool.yaml
+      - yaml/karpenter/ec2nodeclass.yaml
+  - action: kubectl
+    manifest: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: inflate
+      spec:
+        replicas: 5
+        selector:
+          matchLabels:
+            app: inflate
+        template:
+          metadata:
+            labels:
+              app: inflate
+          spec:
+            containers:
+            - name: pause
+              image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+              resources:
+                requests:
+                  cpu: "1"
+                  memory: "1Gi"
+
+test:
+  - name: "Scale up"
+    command: "kubectl scale deployment inflate --replicas=10"
+  - name: "Wait for nodes"
+    command: "kubectl get nodes -l karpenter.sh/nodepool=default -w"
+
+verify:
+  - name: "Check Karpenter logs"
+    command: "kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter --tail=50"
+  - name: "Check interruption queue"
+    command: "aws sqs get-queue-attributes --queue-url ${QUEUE_URL} --attribute-names All"
+
+cleanup:
+  - action: kubectl
+    command: "kubectl delete deployment inflate"
+  - action: terraform
+    destroy_addons:
+      - karpenter

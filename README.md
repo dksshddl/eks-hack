@@ -161,3 +161,48 @@ Options:
 - `-s, --subnet-type`: private, public, private-custom (default: private)
 - `-a, --ami-alias`: AMI alias (default: al2023@latest)
 - `-d, --dry-run`: Generate files without applying
+
+## Reproduction Cases (AI-Assisted)
+
+For support engineers to reproduce customer issues:
+
+```bash
+# List available cases
+ls reproduce/cases/
+
+# Run full reproduction cycle
+./reproduce/scripts/reproduce.sh full CASE-001-istio-memory.yaml
+
+# Or step by step
+./reproduce/scripts/reproduce.sh setup CASE-001-istio-memory.yaml
+./reproduce/scripts/reproduce.sh test CASE-001-istio-memory.yaml
+./reproduce/scripts/reproduce.sh verify CASE-001-istio-memory.yaml
+./reproduce/scripts/reproduce.sh cleanup CASE-001-istio-memory.yaml
+```
+
+With Kiro AI, just describe the issue:
+```
+"Istio 1.19.3 버전으로 메모리 누수 재현 환경 만들어줘"
+"Karpenter 0.32에서 Spot 인터럽션 테스트해줘"
+```
+
+Case files are in `reproduce/cases/` - AI reads these and executes automatically.
+
+## MCP Servers
+
+Pre-configured MCP servers in `.kiro/settings/mcp.json`:
+
+| Server | Description |
+|--------|-------------|
+| `aws-docs` | AWS documentation search |
+| `aws-core` | AWS core services (EC2, IAM, CloudWatch) |
+| `aws-eks` | EKS-specific operations |
+| `kubernetes` | kubectl commands, pod logs, metrics |
+
+Example AI queries with MCP:
+```
+"eks-133 클러스터 노드 상태 확인해줘"
+"karpenter pod 로그에서 에러 찾아줘"
+"istio-proxy 메모리 사용량 봐줘"
+"SQS 큐에 인터럽션 메시지 있는지 확인해줘"
+```
